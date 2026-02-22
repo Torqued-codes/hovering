@@ -23,9 +23,45 @@ function scanURL(url) {
         {
             name: 'Open Redirect',
             patterns: ['redirect=', 'url=', 'next=', 'return=']
+        },
+        {
+            name: 'URL Shortener',
+            custom: (url) => {
+                const shorteners = ['bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'ow.ly', 'short.io', 'tiny.cc', 'rb.gy'];
+                return shorteners.some(s => url.includes(s));
+            }
+        },
+        {
+            name: 'IP Address URL',
+            custom: (url) => /https?:\/\/\d+\.\d+\.\d+\.\d+/.test(url)
+        },
+        {
+            name: 'Fake Domain',
+            custom: (url) => {
+                const fakes = ['paypa1', 'arnazon', 'g00gle', 'faceb00k', 'micros0ft', 'app1e', 'netfl1x', 'lnstagram', 'twltter', 'linkedln'];
+                return fakes.some(f => url.toLowerCase().includes(f));
+            }
+        },
+        {
+            name: 'Phishing Keywords',
+            custom: (url) => {
+                const keywords = ['login-verify', 'account-suspended', 'verify-now', 'update-billing', 'confirm-identity', 'secure-login', 'account-locked', 'unusual-activity', 'verify-account', 'password-reset'];
+                return keywords.some(k => url.toLowerCase().includes(k));
+            }
+        },
+        {
+            name: 'Suspicious TLD',
+            custom: (url) => {
+                const tlds = ['.xyz', '.top', '.club', '.work', '.click', '.loan', '.gq', '.ml', '.cf', '.tk'];
+                return tlds.some(t => url.toLowerCase().includes(t));
+            }
+        },
+        {
+            name: 'Data Theft Patterns',
+            patterns: ['passwd=', 'password=', 'creditcard=', 'ssn=', 'cvv=', 'bankaccount=']
         }
     ];
-    
+
     let vulnerable = 0;
     const urlLower = url.toLowerCase();
 
@@ -69,3 +105,4 @@ document.addEventListener('mouseout', function(e) {
         if (p) p.remove();
     }
 });
+
