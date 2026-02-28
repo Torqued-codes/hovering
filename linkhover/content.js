@@ -92,7 +92,7 @@ function scanURL(url) {
         },
         {
             name: 'Excessive URL Length',
-            custom: function(u) { return u.length > 150; }
+            custom: function(u) { return u.length > 300; }
         },
         {
             name: 'High URL Entropy',
@@ -239,7 +239,7 @@ function scanURL(url) {
         {
             name: 'Long Query String',
             custom: function(u) {
-                try { return new URL(u).search.length > 200; }
+                try { return new URL(u).search.length > 400; }
                 catch(e) { return false; }
             }
         },
@@ -277,44 +277,92 @@ function showPopup(href, clientX, clientY) {
 
     var result = scanURL(href);
     var v = result.vulnerable;
-    var color = v === 0 ? '#00d4ff' : v <= 2 ? '#ffcc00' : '#ff4d4d';
-    var risk  = v === 0 ? '✅ SAFE' : v <= 2 ? '⚠️ MODERATE' : '🚨 HIGH RISK';
+
+    var color, risk, icon, bgGlow;
+    if (v === 0) {
+        color  = '#00e5a0';
+        risk   = 'SAFE';
+        icon   = '✔';
+        bgGlow = 'rgba(0,229,160,0.12)';
+    } else if (v <= 2) {
+        color  = '#ffb700';
+        risk   = 'MODERATE';
+        icon   = '⚠';
+        bgGlow = 'rgba(255,183,0,0.12)';
+    } else {
+        color  = '#ff4060';
+        risk   = 'HIGH RISK';
+        icon   = '✖';
+        bgGlow = 'rgba(255,64,96,0.15)';
+    }
 
     var div = document.createElement('div');
     div.id = 'lh-popup';
 
-    var top  = Math.min(clientY + 16, window.innerHeight - 110);
-    var left = Math.min(clientX + 16, window.innerWidth  - 330);
+    var popupWidth  = 340;
+    var popupHeight = 90;
+    var top  = clientY + 20;
+    var left = clientX + 16;
 
-    div.setAttribute('style',
-        'all:unset !important;' +
-        'display:block !important;' +
-        'position:fixed !important;' +
-        'top:'    + top  + 'px !important;' +
-        'left:'   + left + 'px !important;' +
-        'background:#1a1a2e !important;' +
-        'color:#fff !important;' +
-        'padding:10px 14px !important;' +
-        'border-radius:8px !important;' +
-        'z-index:2147483647 !important;' +
-        'font-size:13px !important;' +
-        'font-family:Arial,sans-serif !important;' +
-        'border:2px solid ' + color + ' !important;' +
-        'min-width:200px !important;' +
-        'max-width:320px !important;' +
-        'pointer-events:none !important;' +
-        'box-shadow:0 4px 20px rgba(0,0,0,0.8) !important;' +
-        'word-break:break-all !important;' +
-        'line-height:1.5 !important;' +
-        'visibility:visible !important;' +
-        'opacity:1 !important'
-    );
+    if (left + popupWidth > window.innerWidth)   left = window.innerWidth  - popupWidth  - 10;
+    if (top  + popupHeight > window.innerHeight) top  = clientY - popupHeight - 10;
+    if (left < 8) left = 8;
+    if (top  < 8) top  = 8;
 
-    var shortUrl = href.length > 45 ? href.slice(0, 45) + '...' : href;
+    var shortUrl = href.length > 48 ? href.slice(0, 48) + '…' : href;
+
+    div.setAttribute('style', [
+        'all:unset',
+        'display:block',
+        'position:fixed',
+        'top:'    + top  + 'px',
+        'left:'   + left + 'px',
+        'width:'  + popupWidth + 'px',
+        'background:#0f1117',
+        'color:#fff',
+        'padding:11px 14px 12px',
+        'border-radius:10px',
+        'z-index:2147483647',
+        'font-size:13px',
+        'font-family:ui-monospace,SFMono-Regular,Consolas,monospace',
+        'border:1.5px solid ' + color,
+        'pointer-events:none',
+        'box-shadow:0 0 0 1px rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.9), 0 0 20px ' + bgGlow,
+        'word-break:break-all',
+        'line-height:1.4',
+        'visibility:visible',
+        'opacity:1',
+        'box-sizing:border-box'
+    ].map(function(s) { return s + ' !important'; }).join(';'));
+
     div.innerHTML =
-        '<div style="font-size:10px;color:#aaa;margin-bottom:5px;">' + shortUrl + '</div>' +
-        '<div style="font-size:15px;font-weight:bold;color:' + color + ';margin-bottom:3px;">' + risk + '</div>' +
-        '<div style="font-size:11px;color:#ccc;">⚠️ ' + v + ' threats &nbsp;|&nbsp; ' + result.total + ' checks</div>';
+        '<div style="all:unset !important;display:block !important;font-size:10px !important;color:#666 !important;margin-bottom:7px !important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;">' +
+            shortUrl +
+        '</div>' +
+
+        '<div style="all:unset !important;display:flex !important;align-items:center !important;gap:10px !important;white-space:nowrap !important;">' +
+
+            '<div style="all:unset !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;width:28px !important;height:28px !important;border-radius:50% !important;background:' + bgGlow + ' !important;border:1.5px solid ' + color + ' !important;font-size:13px !important;color:' + color + ' !important;flex-shrink:0 !important;">' +
+                icon +
+            '</div>' +
+
+            '<span style="all:unset !important;font-size:15px !important;font-weight:700 !important;color:' + color + ' !important;letter-spacing:0.5px !important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace !important;">' +
+                risk +
+            '</span>' +
+
+            '<span style="all:unset !important;color:#333 !important;font-size:14px !important;">|</span>' +
+
+            '<span style="all:unset !important;font-size:11px !important;color:#888 !important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace !important;">' +
+                v + ' threat' + (v !== 1 ? 's' : '') +
+            '</span>' +
+
+            '<span style="all:unset !important;color:#333 !important;font-size:14px !important;">|</span>' +
+
+            '<span style="all:unset !important;font-size:11px !important;color:#888 !important;font-family:ui-monospace,SFMono-Regular,Consolas,monospace !important;">' +
+                result.total + ' checks' +
+            '</span>' +
+
+        '</div>';
 
     var container = document.body || document.documentElement;
     container.appendChild(div);
@@ -344,12 +392,14 @@ document.addEventListener('mousemove', function(e) {
         href = link.href || link.getAttribute('href') || '';
     } catch(ex) { return; }
 
+    // Only show for real http/https URLs
     if (!href || href.indexOf('http') !== 0) {
         currentHref = null;
         removePopup();
         return;
     }
 
+    // Show popup — for ALL links (safe and malicious alike)
     if (href !== currentHref) {
         currentHref = href;
         showPopup(href, e.clientX, e.clientY);
