@@ -1,15 +1,9 @@
 #lh-popup {
-    all: unset;
-    display: block;
-    position: fixed;
-    z-index: 2147483647;
-    pointer-events: none;
-    font-family: Arial, sans-serif;
-    word-break: break-all;
-    line-height: 1.5;
-}
-
-#lh-popup * {
-    all: unset;
-    display: inline;
+    all: unset !important;
+    display: block !important;
+    position: fixed !important;
+    z-index: 2147483647 !important;
+    pointer-events: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
